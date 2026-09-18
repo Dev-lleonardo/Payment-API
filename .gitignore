@@ -4,6 +4,9 @@ target/
 !**/src/main/**/target/
 !**/src/test/**/target/
 
+### Logs de debug locais ###
+*.log
+
 ### STS ###
 .apt_generated
 .classpath

@@ -3,9 +3,9 @@ spring:
     name: payment-api
 
   datasource:
-    url: jdbc:postgresql://localhost:5432/payment_api
-    username: postgres
-    password: postgres
+    url: jdbc:postgresql://${DB_HOST:localhost}:${DB_PORT:5432}/${DB_NAME:payment_api}
+    username: ${DB_USERNAME:postgres}
+    password: ${DB_PASSWORD:postgres}
     driver-class-name: org.postgresql.Driver
 
   jpa:
@@ -19,3 +19,17 @@ spring:
   flyway:
     enabled: true
     locations: classpath:db/migration
+
+jwt:
+  # Valor abaixo é só um default de DESENVOLVIMENTO (256 bits, gerado aleatoriamente).
+  # Em qualquer ambiente real, isso vem de uma variável de ambiente/secret manager,
+  # nunca fica hardcoded no application.yml versionado.
+  secret: ${JWT_SECRET:Myom5oRbiPTRsWSDqVELkHI2PJ4MprkDpQJsX8+Aljs=}
+  expiration-ms: ${JWT_EXPIRATION_MS:3600000}
+
+webhook:
+  # Mesma lógica do jwt.secret: default só para rodar localmente. Em produção
+  # esse valor seria combinado com o gateway de pagamento real (cada gateway
+  # tem seu próprio segredo, geralmente configurável no painel dele) e viria
+  # de uma variável de ambiente/secret manager.
+  secret: ${WEBHOOK_SECRET:67810b93bde1dbed157c62e6ab28a7b281f813cf6f8d5347d9bac7e7be45ab97}
