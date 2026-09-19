@@ -126,6 +126,25 @@
 				<groupId>org.springframework.boot</groupId>
 				<artifactId>spring-boot-maven-plugin</artifactId>
 			</plugin>
+			<!-- Convenção Maven: o Surefire (fase "test") só pega *Test/*Tests/*TestCase
+			     por padrão — classes *IT (nossos testes de integração MockMvc +
+			     Testcontainers) são convenção do Failsafe, ligado às fases
+			     "integration-test"/"verify". Sem isso, "mvn test" simplesmente
+			     não executa nenhum *IT, sem avisar nem falhar. Não precisa de
+			     <version> aqui: o spring-boot-starter-parent já gerencia essa
+			     versão, igual faz com o maven-surefire-plugin. -->
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-failsafe-plugin</artifactId>
+				<executions>
+					<execution>
+						<goals>
+							<goal>integration-test</goal>
+							<goal>verify</goal>
+						</goals>
+					</execution>
+				</executions>
+			</plugin>
 		</plugins>
 	</build>
 
