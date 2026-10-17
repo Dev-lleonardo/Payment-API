@@ -46,26 +46,25 @@ Swagger/OpenAPI.
 
 ## Status atual do projeto (ver histórico de commits pra detalhes)
 
-FASE 10 (Testes) em andamento. Concluído e validado até aqui:
+FASES 1–13 concluídas e publicadas no GitHub:
 
-1. **10.1** — Infraestrutura Testcontainers (`AbstractIntegrationTest`, Singleton Container).
-2. **10.2** — Testes unitários de regras de negócio (`PaymentTest`, `PaymentRequestValidationTest`) — 27 testes.
-3. **10.3** — Testes unitários do `PaymentService` com Mockito — 14 testes.
-4. **10.4** — Testes unitários do `WebhookService` com Mockito — 13 testes.
-5. **10.5a** — `AuthControllerIT` (MockMvc + Testcontainers, `/auth/register` e `/auth/login`) — 9 testes.
+- **FASE 10** — Testes: 91 no total (`./mvnw verify`). 54 unitários (`PaymentTest`,
+  `PaymentRequestValidationTest`, `PaymentServiceTest`, `WebhookServiceTest`) + 37 de integração
+  com Testcontainers (`AuthControllerIT`, `PaymentControllerIT`, `WebhookControllerIT`,
+  `PaymentIdempotencyConcurrencyTest`, `PaymentApiApplicationTests`). `*IT` rodam pelo Failsafe.
+- **FASE 11** — Dockerfile multi-stage + serviço `app` no `docker-compose.yml`. Validado ponta a
+  ponta com `docker compose up --build`.
+- **FASE 12** — Swagger/OpenAPI com springdoc 3.1.1 (`/swagger-ui.html`), esquema `bearerAuth`
+  em `config/OpenApiConfig.java`, respostas/headers/paginação documentados nos controllers.
+- **FASE 13** — README completo com diagramas Mermaid (arquitetura, máquina de estados,
+  sequência de idempotência, ER), decisões técnicas e lições aprendidas.
 
-**Total: 64 testes passando.**
+**Próximo passo: FASE 14** — revisão final estilo entrevista técnica + perguntas baseadas no
+código real. É a última fase do roadmap.
 
-**Próximo passo: 10.5b — `PaymentControllerIT`.** Ler `controller/PaymentController.java` antes de
-escrever. Cobertura planejada: criar pagamento com `Idempotency-Key` (incluindo reenvio da mesma
-chave), consultar/listar respeitando escopo USER (só os próprios) vs ADMIN (todos), cancelar
-(incluindo tentativas de transição de estado inválida).
-
-Depois: **10.5c** — `WebhookControllerIT` (assinatura HMAC via `WebhookSignatureVerifier.sign(...)`,
-processamento de evento, idempotência). Depois: **10.6** — revisão da suíte completa
-(`./mvnw clean test`). Depois: **FASE 11** (Docker), **FASE 12** (Swagger/OpenAPI),
-**FASE 13** (README completo + diagrama de arquitetura), **FASE 14** (revisão final estilo
-entrevista técnica + perguntas baseadas no código real).
+Atenção: o Leonardo tem outro projeto (`ecommerce-api`) que também usa a porta 8080. Se o
+Payment API não responder, conferir `docker ps` antes de supor bug — e não derrubar o outro
+projeto sem perguntar.
 
 ## Modelo de dados
 
