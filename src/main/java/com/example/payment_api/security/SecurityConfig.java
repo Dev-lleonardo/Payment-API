@@ -33,6 +33,10 @@ public class SecurityConfig {
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/auth/**", "/webhooks/payment").permitAll()
+                        // FASE 12: a documentação é pública pra poder ser lida sem
+                        // token. Os endpoints em si continuam protegidos — o Swagger
+                        // UI só monta as requisições, quem decide é esta mesma chain.
+                        .requestMatchers("/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html").permitAll()
                         .anyRequest().authenticated()
                 )
                 // Roda antes do filtro padrão de usuário/senha do Spring Security,

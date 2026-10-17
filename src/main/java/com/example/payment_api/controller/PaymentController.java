@@ -4,6 +4,7 @@ import com.example.payment_api.dto.PaymentRequest;
 import com.example.payment_api.dto.PaymentResponse;
 import com.example.payment_api.entity.Payment;
 import com.example.payment_api.service.PaymentService;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
 import org.springframework.data.domain.Page;
@@ -24,6 +25,7 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @RequestMapping("/payments")
 @Validated
+@SecurityRequirement(name = "bearerAuth") // FASE 12: todos os endpoints daqui exigem JWT (ver OpenApiConfig)
 public class PaymentController {
 
     private final PaymentService paymentService;

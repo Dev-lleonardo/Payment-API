@@ -30,6 +30,10 @@
 		<java.version>21</java.version>
 		<jjwt.version>0.13.0</jjwt.version>
 		<testcontainers.version>1.21.4</testcontainers.version>
+		<!-- springdoc 3.x é a linha compatível com Spring Boot 4 (a 2.x é do
+		     Boot 3). A 3.1.x foi compilada contra o Boot 4.1. O BOM do Spring
+		     Boot não gerencia essa versão, então ela precisa ser explícita. -->
+		<springdoc.version>3.1.1</springdoc.version>
 	</properties>
 	<dependencies>
 		<dependency>
@@ -79,6 +83,14 @@
 			<artifactId>jjwt-jackson</artifactId>
 			<version>${jjwt.version}</version>
 			<scope>runtime</scope>
+		</dependency>
+
+		<!-- FASE 12: gera a especificação OpenAPI a partir dos controllers
+		     (/v3/api-docs) e serve o Swagger UI (/swagger-ui.html). -->
+		<dependency>
+			<groupId>org.springdoc</groupId>
+			<artifactId>springdoc-openapi-starter-webmvc-ui</artifactId>
+			<version>${springdoc.version}</version>
 		</dependency>
 
 		<dependency>
