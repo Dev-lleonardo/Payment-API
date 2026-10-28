@@ -92,7 +92,7 @@ class PaymentControllerIT extends AbstractIntegrationTest {
                 .andExpect(jsonPath("$.status").value("PROCESSING"))
                 .andExpect(jsonPath("$.idempotencyKey").value(idempotencyKey));
 
-        Payment persisted = paymentRepository.findByIdempotencyKey(idempotencyKey).orElseThrow();
+        Payment persisted = paymentRepository.findByUserIdAndIdempotencyKey(user.getId(), idempotencyKey).orElseThrow();
         assertThat(persisted.getStatus()).isEqualTo(PaymentStatus.PROCESSING);
         assertThat(persisted.getUser().getId()).isEqualTo(user.getId());
     }
@@ -172,6 +172,41 @@ class PaymentControllerIT extends AbstractIntegrationTest {
                         .content(jsonMapper.writeValueAsString(conflicting)))
                 .andExpect(status().isConflict())
                 .andExpect(jsonPath("$.status").value(409));
+    }
+
+    // Idempotency-Key é um contrato entre UM cliente e a API (mesmo modelo
+    // do Stripe): a mesma chave usada por outro usuário não pode devolver o
+    // pagamento de quem a usou primeiro — isso vazaria dados entre usuários.
+    // Cada usuário tem seu próprio "espaço" de chaves.
+    @Test
+    void create_sameIdempotencyKeyUsedByAnotherUser_createsSeparatePaymentForThatUser() throws Exception {
+        User userA = createUser(Role.USER);
+        User userB = createUser(Role.USER);
+        String idempotencyKey = uniqueKey();
+        PaymentRequest request = new PaymentRequest("order-shared", new BigDecimal("50.00"), PaymentMethod.PIX);
+
+        String responseA = mockMvc.perform(post("/payments")
+                        .header(HttpHeaders.AUTHORIZATION, bearerToken(userA))
+                        .header("Idempotency-Key", idempotencyKey)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(jsonMapper.writeValueAsString(request)))
+                .andExpect(status().isCreated())
+                .andReturn().getResponse().getContentAsString();
+
+        String responseB = mockMvc.perform(post("/payments")
+                        .header(HttpHeaders.AUTHORIZATION, bearerToken(userB))
+                        .header("Idempotency-Key", idempotencyKey)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(jsonMapper.writeValueAsString(request)))
+                .andExpect(status().isCreated())
+                .andReturn().getResponse().getContentAsString();
+
+        Long paymentIdA = jsonMapper.readTree(responseA).get("id").asLong();
+        Long paymentIdB = jsonMapper.readTree(responseB).get("id").asLong();
+
+        assertThat(paymentIdB).isNotEqualTo(paymentIdA);
+        assertThat(paymentRepository.findById(paymentIdB).orElseThrow().getUser().getId())
+                .isEqualTo(userB.getId());
     }
 
     @Test

@@ -46,7 +46,9 @@ public class Payment {
     @Column(name = "status", nullable = false, length = 20)
     private PaymentStatus status;
 
-    @Column(name = "idempotency_key", nullable = false, unique = true, length = 100)
+    // Única por usuário, não globalmente: a constraint composta
+    // (user_id, idempotency_key) vive na migration V4.
+    @Column(name = "idempotency_key", nullable = false, length = 100)
     private String idempotencyKey;
 
     @CreationTimestamp

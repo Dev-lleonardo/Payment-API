@@ -66,7 +66,7 @@ public class PaymentService {
     // dependência circular na inicialização). Chamar self.insertAndStartProcessing(...)
     // passa pelo proxy de verdade, abrindo uma transação nova e genuína.
     public Payment createPayment(PaymentRequest request, String idempotencyKey, Long currentUserId) {
-        Optional<Payment> existing = paymentRepository.findByIdempotencyKey(idempotencyKey);
+        Optional<Payment> existing = paymentRepository.findByUserIdAndIdempotencyKey(currentUserId, idempotencyKey);
         if (existing.isPresent()) {
             return sameOrConflict(existing.get(), request);
         }
@@ -76,10 +76,10 @@ public class PaymentService {
         } catch (DataIntegrityViolationException ex) {
             // A transação de insertAndStartProcessing() já foi totalmente
             // encerrada (rollback) antes da exceção chegar até aqui — este
-            // findByIdempotencyKey roda numa transação/sessão nova e limpa,
-            // aberta pelo próprio Spring Data JPA por conta do método do
-            // repositório ser chamado diretamente.
-            Payment concurrentlyCreated = paymentRepository.findByIdempotencyKey(idempotencyKey)
+            // findByUserIdAndIdempotencyKey roda numa transação/sessão nova e
+            // limpa, aberta pelo próprio Spring Data JPA por conta do método
+            // do repositório ser chamado diretamente.
+            Payment concurrentlyCreated = paymentRepository.findByUserIdAndIdempotencyKey(currentUserId, idempotencyKey)
                     .orElseThrow(() -> ex);
             return sameOrConflict(concurrentlyCreated, request);
         }

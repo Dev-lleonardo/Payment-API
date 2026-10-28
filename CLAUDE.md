@@ -48,8 +48,8 @@ Swagger/OpenAPI.
 
 FASES 1–13 concluídas e publicadas no GitHub:
 
-- **FASE 10** — Testes: 91 no total (`./mvnw verify`). 54 unitários (`PaymentTest`,
-  `PaymentRequestValidationTest`, `PaymentServiceTest`, `WebhookServiceTest`) + 37 de integração
+- **FASE 10** — Testes: 92 no total (`./mvnw verify`). 54 unitários (`PaymentTest`,
+  `PaymentRequestValidationTest`, `PaymentServiceTest`, `WebhookServiceTest`) + 38 de integração
   com Testcontainers (`AuthControllerIT`, `PaymentControllerIT`, `WebhookControllerIT`,
   `PaymentIdempotencyConcurrencyTest`, `PaymentApiApplicationTests`). `*IT` rodam pelo Failsafe.
 - **FASE 11** — Dockerfile multi-stage + serviço `app` no `docker-compose.yml`. Validado ponta a
@@ -71,7 +71,7 @@ projeto sem perguntar.
 
 - **users**: id, name, email (UNIQUE), password_hash, role (USER/ADMIN), created_at, updated_at
 - **payments**: id, order_id, user_id (FK), amount (>0), payment_method (PIX/CREDIT_CARD/DEBIT_CARD),
-  status (PENDING/PROCESSING/APPROVED/DECLINED/CANCELLED), idempotency_key (UNIQUE), created_at, updated_at
+  status (PENDING/PROCESSING/APPROVED/DECLINED/CANCELLED), idempotency_key (UNIQUE junto com user_id — V4), created_at, updated_at
 - **webhook_events**: id, event_id (UNIQUE), payment_id (FK), status_received, payload (JSONB),
   processed_at, created_at
 

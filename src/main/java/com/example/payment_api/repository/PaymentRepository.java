@@ -9,11 +9,13 @@ import java.util.Optional;
 
 public interface PaymentRepository extends JpaRepository<Payment, Long> {
 
-    Optional<Payment> findByIdempotencyKey(String idempotencyKey);
+    // A chave só identifica um pagamento junto com o dono: dois usuários
+    // podem usar a mesma Idempotency-Key sem se enxergarem.
+    Optional<Payment> findByUserIdAndIdempotencyKey(Long userId, String idempotencyKey);
 
     Page<Payment> findByUserId(Long userId, Pageable pageable);
 
-    // Usado no teste de concorrência da FASE 7 para confirmar que, mesmo sob
-    // corrida, nunca existe mais de UM pagamento com a mesma chave.
+    // Usado nos testes de idempotência para confirmar que, mesmo sob corrida,
+    // um mesmo usuário nunca fica com mais de UM pagamento com a mesma chave.
     long countByIdempotencyKey(String idempotencyKey);
 }

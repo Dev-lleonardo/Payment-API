@@ -11,7 +11,7 @@ API REST em Java 21 + Spring Boot 4 que simula o processamento de pagamentos de 
 - **Webhook com assinatura HMAC-SHA256** — só o gateway que conhece o segredo consegue mudar o status de um pagamento. Comparação em tempo constante contra timing attack.
 - **Webhook idempotente** — o mesmo evento entregue duas vezes (o que gateways reais fazem) é processado uma única vez.
 - **Autorização por escopo de dados** — USER só enxerga os próprios pagamentos, ADMIN enxerga todos. Pagamento de outro usuário responde 404, não 403.
-- **91 testes automatizados** — 54 unitários (domínio, validação e services com Mockito) + 37 de integração com Postgres real em container (Testcontainers), incluindo a camada HTTP inteira via MockMvc.
+- **92 testes automatizados** — 54 unitários (domínio, validação e services com Mockito) + 38 de integração com Postgres real em container (Testcontainers), incluindo a camada HTTP inteira via MockMvc.
 
 ---
 
@@ -97,24 +97,26 @@ sequenceDiagram
     participant S as PaymentService
     participant DB as PostgreSQL
 
-    A->>S: POST /payments (key=abc)
-    B->>S: POST /payments (key=abc)
-    S->>DB: findByIdempotencyKey(abc) — A
+    A->>S: POST /payments (user=u1, key=abc)
+    B->>S: POST /payments (user=u1, key=abc)
+    S->>DB: findByUserIdAndIdempotencyKey(u1, abc) — A
     DB-->>S: vazio
-    S->>DB: findByIdempotencyKey(abc) — B
+    S->>DB: findByUserIdAndIdempotencyKey(u1, abc) — B
     DB-->>S: vazio
     S->>DB: INSERT (A)
     DB-->>S: OK
     S->>DB: INSERT (B)
-    DB-->>S: viola UNIQUE(idempotency_key)
+    DB-->>S: viola UNIQUE(user_id, idempotency_key)
     Note over S: a transação de B já foi revertida;<br/>busca de novo numa transação limpa
-    S->>DB: findByIdempotencyKey(abc) — B
+    S->>DB: findByUserIdAndIdempotencyKey(u1, abc) — B
     DB-->>S: pagamento criado por A
     S-->>A: 201 (pagamento)
     S-->>B: 201 (mesmo pagamento)
 ```
 
 A checagem no código é a otimização do caso comum; a constraint `UNIQUE` no banco é a garantia real. Se a mesma chave chegar com **dados diferentes** (outro valor, outro pedido), a resposta é **409** — devolver o pagamento antigo silenciosamente esconderia um bug do cliente.
+
+A chave é única **por usuário** (`UNIQUE(user_id, idempotency_key)`), no mesmo modelo do Stripe: idempotência é um contrato entre um cliente e a API. Com uma chave global, um usuário que reusasse a chave de outro (com o mesmo corpo) receberia o pagamento dele — um vazamento de dados entre usuários, corrigido na migration `V4`.
 
 ### Modelo de dados
 
@@ -139,7 +141,7 @@ erDiagram
         numeric amount "CHECK > 0"
         varchar payment_method "PIX | CREDIT_CARD | DEBIT_CARD"
         varchar status
-        varchar idempotency_key UK
+        varchar idempotency_key "UNIQUE com user_id"
         timestamp created_at
         timestamp updated_at
     }

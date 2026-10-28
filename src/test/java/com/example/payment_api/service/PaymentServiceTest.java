@@ -71,7 +71,7 @@ class PaymentServiceTest {
         PaymentRequest request = new PaymentRequest("order-1", new BigDecimal("100.00"), PaymentMethod.PIX);
         Payment inserted = newPayment("order-1", mockUser(7L), new BigDecimal("100.00"), PaymentMethod.PIX, "key-1");
 
-        when(paymentRepository.findByIdempotencyKey("key-1")).thenReturn(Optional.empty());
+        when(paymentRepository.findByUserIdAndIdempotencyKey(7L, "key-1")).thenReturn(Optional.empty());
         when(self.insertAndStartProcessing(request, "key-1", 7L)).thenReturn(inserted);
 
         Payment result = paymentService.createPayment(request, "key-1", 7L);
@@ -85,7 +85,7 @@ class PaymentServiceTest {
         PaymentRequest request = new PaymentRequest("order-1", new BigDecimal("100.00"), PaymentMethod.PIX);
         Payment existing = newPayment("order-1", mockUser(7L), new BigDecimal("100.00"), PaymentMethod.PIX, "key-1");
 
-        when(paymentRepository.findByIdempotencyKey("key-1")).thenReturn(Optional.of(existing));
+        when(paymentRepository.findByUserIdAndIdempotencyKey(7L, "key-1")).thenReturn(Optional.of(existing));
 
         Payment result = paymentService.createPayment(request, "key-1", 7L);
 
@@ -100,7 +100,7 @@ class PaymentServiceTest {
         PaymentRequest request = new PaymentRequest("order-1", new BigDecimal("999.00"), PaymentMethod.PIX);
         Payment existing = newPayment("order-1", mockUser(7L), new BigDecimal("100.00"), PaymentMethod.PIX, "key-1");
 
-        when(paymentRepository.findByIdempotencyKey("key-1")).thenReturn(Optional.of(existing));
+        when(paymentRepository.findByUserIdAndIdempotencyKey(7L, "key-1")).thenReturn(Optional.of(existing));
 
         assertThatThrownBy(() -> paymentService.createPayment(request, "key-1", 7L))
                 .isInstanceOf(IdempotencyKeyConflictException.class);
@@ -115,7 +115,7 @@ class PaymentServiceTest {
         PaymentRequest request = new PaymentRequest("order-1", new BigDecimal("100.00"), PaymentMethod.PIX);
         Payment concurrentlyCreated = newPayment("order-1", mockUser(7L), new BigDecimal("100.00"), PaymentMethod.PIX, "key-1");
 
-        when(paymentRepository.findByIdempotencyKey("key-1"))
+        when(paymentRepository.findByUserIdAndIdempotencyKey(7L, "key-1"))
                 .thenReturn(Optional.empty())              // 1ª checagem: nada ainda
                 .thenReturn(Optional.of(concurrentlyCreated)); // recuperação após a corrida
         when(self.insertAndStartProcessing(request, "key-1", 7L))
@@ -135,7 +135,7 @@ class PaymentServiceTest {
         PaymentRequest request = new PaymentRequest("order-1", new BigDecimal("100.00"), PaymentMethod.PIX);
         DataIntegrityViolationException original = new DataIntegrityViolationException("duplicate key");
 
-        when(paymentRepository.findByIdempotencyKey("key-1"))
+        when(paymentRepository.findByUserIdAndIdempotencyKey(7L, "key-1"))
                 .thenReturn(Optional.empty())
                 .thenReturn(Optional.empty());
         when(self.insertAndStartProcessing(request, "key-1", 7L)).thenThrow(original);
