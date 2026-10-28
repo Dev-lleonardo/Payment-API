@@ -59,8 +59,9 @@ FASES 1–13 concluídas e publicadas no GitHub:
 - **FASE 13** — README completo com diagramas Mermaid (arquitetura, máquina de estados,
   sequência de idempotência, ER), decisões técnicas e lições aprendidas.
 
-**Próximo passo: FASE 14** — revisão final estilo entrevista técnica + perguntas baseadas no
-código real. É a última fase do roadmap.
+**Roadmap concluído.** A FASE 14 (revisão final estilo entrevista técnica) foi pulada a pedido
+do Leonardo em 2026-10-28. Não há próxima fase pendente — qualquer trabalho novo (ex.: CI com
+GitHub Actions) só começa se o Leonardo pedir.
 
 Atenção: o Leonardo tem outro projeto (`ecommerce-api`) que também usa a porta 8080. Se o
 Payment API não responder, conferir `docker ps` antes de supor bug — e não derrubar o outro
