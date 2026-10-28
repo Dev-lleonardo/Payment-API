@@ -20,16 +20,17 @@ spring:
     enabled: true
     locations: classpath:db/migration
 
+# Segredos SEM valor padrão de propósito (fail-fast): se JWT_SECRET ou
+# WEBHOOK_SECRET não estiverem definidos, o Spring não resolve o placeholder
+# e a aplicação se recusa a subir. Um default aqui faria um deploy sem a
+# variável subir "normalmente" com um segredo público no GitHub — e quem tem
+# o segredo do JWT consegue forjar um token de ADMIN.
+# Para rodar localmente, ative o perfil "dev" (ver application-dev.yml).
 jwt:
-  # Valor abaixo é só um default de DESENVOLVIMENTO (256 bits, gerado aleatoriamente).
-  # Em qualquer ambiente real, isso vem de uma variável de ambiente/secret manager,
-  # nunca fica hardcoded no application.yml versionado.
-  secret: ${JWT_SECRET:Myom5oRbiPTRsWSDqVELkHI2PJ4MprkDpQJsX8+Aljs=}
+  secret: ${JWT_SECRET}
   expiration-ms: ${JWT_EXPIRATION_MS:3600000}
 
 webhook:
-  # Mesma lógica do jwt.secret: default só para rodar localmente. Em produção
-  # esse valor seria combinado com o gateway de pagamento real (cada gateway
-  # tem seu próprio segredo, geralmente configurável no painel dele) e viria
-  # de uma variável de ambiente/secret manager.
-  secret: ${WEBHOOK_SECRET:67810b93bde1dbed157c62e6ab28a7b281f813cf6f8d5347d9bac7e7be45ab97}
+  # Em produção, combinado com o gateway de pagamento real (cada gateway tem
+  # seu próprio segredo, configurável no painel dele).
+  secret: ${WEBHOOK_SECRET}

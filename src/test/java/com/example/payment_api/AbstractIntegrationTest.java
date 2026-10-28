@@ -1,6 +1,7 @@
 package com.example.payment_api;
 
 import org.springframework.boot.testcontainers.service.connection.ServiceConnection;
+import org.springframework.test.context.ActiveProfiles;
 import org.testcontainers.containers.PostgreSQLContainer;
 
 // Classe base para os testes de INTEGRAÇÃO da FASE 10: sobe um Postgres
@@ -23,6 +24,12 @@ import org.testcontainers.containers.PostgreSQLContainer;
 // spring.datasource.url/username/password via @DynamicPropertySource — o
 // Spring detecta esse container e conecta a aplicação nele automaticamente
 // quando o contexto de teste sobe.
+//
+// @ActiveProfiles("dev"): carrega o application-dev.yml, que tem os
+// segredos de desenvolvimento. Sem isso o contexto não sobe, porque o
+// application.yml exige JWT_SECRET/WEBHOOK_SECRET (fail-fast). A anotação é
+// herdada, então todas as subclasses rodam com o perfil dev.
+@ActiveProfiles("dev")
 public abstract class AbstractIntegrationTest {
 
     @ServiceConnection

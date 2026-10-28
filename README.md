@@ -11,7 +11,7 @@ API REST em Java 21 + Spring Boot 4 que simula o processamento de pagamentos de 
 - **Webhook com assinatura HMAC-SHA256** — só o gateway que conhece o segredo consegue mudar o status de um pagamento. Comparação em tempo constante contra timing attack.
 - **Webhook idempotente** — o mesmo evento entregue duas vezes (o que gateways reais fazem) é processado uma única vez.
 - **Autorização por escopo de dados** — USER só enxerga os próprios pagamentos, ADMIN enxerga todos. Pagamento de outro usuário responde 404, não 403.
-- **92 testes automatizados** — 54 unitários (domínio, validação e services com Mockito) + 38 de integração com Postgres real em container (Testcontainers), incluindo a camada HTTP inteira via MockMvc.
+- **94 testes automatizados** — 56 unitários (domínio, validação, configuração e services com Mockito) + 38 de integração com Postgres real em container (Testcontainers), incluindo a camada HTTP inteira via MockMvc.
 
 ---
 
@@ -186,22 +186,24 @@ Pré-requisitos: JDK 21 e Docker (só para o banco).
 
 ```bash
 docker compose up -d postgres
-./mvnw spring-boot:run
+./mvnw spring-boot:run "-Dspring-boot.run.profiles=dev"
 ```
+
+Sem o perfil `dev`, a aplicação **se recusa a subir** se `JWT_SECRET` e `WEBHOOK_SECRET` não estiverem definidos (ver *Decisões técnicas*).
 
 ### Variáveis de ambiente
 
-Todas têm um default para desenvolvimento local, definido em `application.yml`.
+As de banco e a validade do token têm default em `application.yml`. Os **segredos não têm default**: fora do perfil `dev`, são obrigatórios.
 
 | Variável | Default | Descrição |
 |---|---|---|
 | `DB_HOST` / `DB_PORT` / `DB_NAME` | `localhost` / `5432` / `payment_api` | Conexão com o Postgres |
 | `DB_USERNAME` / `DB_PASSWORD` | `postgres` / `postgres` | Credenciais do banco |
-| `JWT_SECRET` | chave de desenvolvimento | Chave HMAC usada para assinar os tokens (mínimo 256 bits) |
+| `JWT_SECRET` | **obrigatória** (só o perfil `dev` tem uma chave de desenvolvimento) | Chave HMAC usada para assinar os tokens (mínimo 256 bits) |
 | `JWT_EXPIRATION_MS` | `3600000` (1h) | Validade do token |
-| `WEBHOOK_SECRET` | segredo de desenvolvimento | Segredo compartilhado com o gateway para validar o HMAC |
+| `WEBHOOK_SECRET` | **obrigatória** (só o perfil `dev` tem um segredo de desenvolvimento) | Segredo compartilhado com o gateway para validar o HMAC |
 
-> ⚠️ Os defaults de `JWT_SECRET` e `WEBHOOK_SECRET` existem só para o projeto rodar com um comando. Em qualquer ambiente real eles viriam de um secret manager.
+> ⚠️ Os segredos de desenvolvimento ficam em `application-dev.yml`, que só é lido com o perfil `dev` ativo (testes de integração, `docker-compose` e o comando acima). Em qualquer ambiente real eles viriam de um secret manager.
 
 ---
 
@@ -310,6 +312,9 @@ O filtro lê o id do usuário (`sub`) e a role direto do token assinado. Isso ev
 **Regras de negócio duplicadas no banco de propósito.**
 `amount > 0`, enums válidos e chaves únicas são validados no Java *e* existem como `CHECK`/`UNIQUE` no Postgres. O Java dá a mensagem de erro amigável; o banco garante a integridade mesmo se alguém escrever direto nele ou se um bug passar pela validação.
 
+**Fail-fast para segredos ausentes.**
+`jwt.secret` e `webhook.secret` usam `${JWT_SECRET}` sem valor padrão. Com um default, um deploy que esquecesse a variável subiria "normalmente" usando um segredo público no GitHub — e quem tem o segredo do JWT forja um token de ADMIN. Sem default, o Spring não resolve o placeholder e a aplicação para na inicialização com uma mensagem clara. O modo inseguro virou opt-in: o perfil `dev` (`application-dev.yml`) é o único lugar com segredos de desenvolvimento.
+
 ---
 
 ## Desafios e lições aprendidas
@@ -330,7 +335,7 @@ Fora do escopo deste projeto de propósito, mas seriam os próximos passos num s
 - **Refresh token e revogação** — tokens de acesso curtos (minutos) + refresh token, permitindo deslogar e mudar role sem esperar expirar.
 - **Rate limiting** — principalmente em `/auth/login` (força bruta) e `/payments`.
 - **Observabilidade** — Actuator com health check, métricas (Micrometer/Prometheus) e logs estruturados com um id de correlação por requisição.
-- **Segredos fora do código** — remover os defaults de `JWT_SECRET`/`WEBHOOK_SECRET` e exigir que venham de um secret manager; desligar o Swagger UI em produção.
+- **Secret manager** — os segredos já são obrigatórios fora do perfil `dev`; o próximo passo seria buscá-los de um secret manager (Vault, AWS Secrets Manager) com rotação, e desligar o Swagger UI em produção.
 - **Expiração de `Idempotency-Key`** — hoje a chave vale para sempre; o padrão de mercado é expirar depois de ~24h.
 
 ---

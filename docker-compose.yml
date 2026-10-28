@@ -20,6 +20,8 @@ services:
     build: .
     container_name: payment-api-app
     environment:
+      # Ambiente local: usa os segredos de desenvolvimento do application-dev.yml.
+      SPRING_PROFILES_ACTIVE: dev
       DB_HOST: postgres
       DB_PORT: 5432
       DB_NAME: payment_api

@@ -1,0 +1,10 @@
+# Perfil de DESENVOLVIMENTO: só é lido quando "dev" está ativo
+# (testes de integração, docker-compose e spring-boot:run local).
+# Estes segredos são públicos — estão no GitHub — e nunca podem ser usados
+# num ambiente real. Fora do perfil dev, o application.yml exige as
+# variáveis de ambiente e não sobe sem elas.
+jwt:
+  secret: ${JWT_SECRET:Myom5oRbiPTRsWSDqVELkHI2PJ4MprkDpQJsX8+Aljs=}
+
+webhook:
+  secret: ${WEBHOOK_SECRET:67810b93bde1dbed157c62e6ab28a7b281f813cf6f8d5347d9bac7e7be45ab97}

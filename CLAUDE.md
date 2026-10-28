@@ -48,12 +48,15 @@ Swagger/OpenAPI.
 
 FASES 1–13 concluídas e publicadas no GitHub:
 
-- **FASE 10** — Testes: 92 no total (`./mvnw verify`). 54 unitários (`PaymentTest`,
-  `PaymentRequestValidationTest`, `PaymentServiceTest`, `WebhookServiceTest`) + 38 de integração
+- **FASE 10** — Testes: 94 no total (`./mvnw verify`). 56 unitários (`PaymentTest`,
+  `PaymentRequestValidationTest`, `SecretsConfigurationTest`, `PaymentServiceTest`, `WebhookServiceTest`) + 38 de integração
   com Testcontainers (`AuthControllerIT`, `PaymentControllerIT`, `WebhookControllerIT`,
   `PaymentIdempotencyConcurrencyTest`, `PaymentApiApplicationTests`). `*IT` rodam pelo Failsafe.
 - **FASE 11** — Dockerfile multi-stage + serviço `app` no `docker-compose.yml`. Validado ponta a
-  ponta com `docker compose up --build`.
+  ponta com `docker compose up --build`. O compose ativa o perfil `dev`.
+- **Segredos fail-fast** — `JWT_SECRET`/`WEBHOOK_SECRET` sem default no `application.yml`; os de
+  desenvolvimento ficam em `application-dev.yml`. Rodar local: `./mvnw spring-boot:run "-Dspring-boot.run.profiles=dev"`.
+  Testes de integração ativam `dev` via `@ActiveProfiles` no `AbstractIntegrationTest`.
 - **FASE 12** — Swagger/OpenAPI com springdoc 3.1.1 (`/swagger-ui.html`), esquema `bearerAuth`
   em `config/OpenApiConfig.java`, respostas/headers/paginação documentados nos controllers.
 - **FASE 13** — README completo com diagramas Mermaid (arquitetura, máquina de estados,
