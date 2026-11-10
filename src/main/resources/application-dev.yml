@@ -8,3 +8,11 @@ jwt:
 
 webhook:
   secret: ${WEBHOOK_SECRET:67810b93bde1dbed157c62e6ab28a7b281f813cf6f8d5347d9bac7e7be45ab97}
+
+# Em dev, ver o SQL gerado pelo JPA ajuda a entender o que o Hibernate faz.
+spring:
+  jpa:
+    show-sql: true
+    properties:
+      hibernate:
+        format_sql: true

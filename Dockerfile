@@ -17,4 +17,7 @@ WORKDIR /app
 COPY --from=build /app/target/payment-api-0.0.1-SNAPSHOT.jar app.jar
 
 EXPOSE 8080
-ENTRYPOINT ["java", "-jar", "app.jar"]
+# Container grátis do Render tem 512 MB. Por padrão a JVM usa só 25% da RAM
+# do container pra heap; num container pequeno e dedicado, 75% aproveita a
+# memória e ainda deixa folga pro resto do processo (metaspace, threads).
+ENTRYPOINT ["java", "-XX:MaxRAMPercentage=75.0", "-jar", "app.jar"]
