@@ -61,10 +61,17 @@ FASES 1–13 concluídas e publicadas no GitHub:
   em `config/OpenApiConfig.java`, respostas/headers/paginação documentados nos controllers.
 - **FASE 13** — README completo com diagramas Mermaid (arquitetura, máquina de estados,
   sequência de idempotência, ER), decisões técnicas e lições aprendidas.
+- **CI (2026-11-10)** — GitHub Actions em `.github/workflows/ci.yml`: roda `./mvnw -B verify`
+  (os 94 testes, Testcontainers usa o Docker do runner `ubuntu-latest`) a cada push/PR na `main`.
+  Actions nas últimas majors (checkout v7, setup-java v6, upload-artifact v7); relatórios de
+  teste sobem como artifact só se falhar. Badge de status no topo do README.
 
 **Roadmap concluído.** A FASE 14 (revisão final estilo entrevista técnica) foi pulada a pedido
-do Leonardo em 2026-10-28. Não há próxima fase pendente — qualquer trabalho novo (ex.: CI com
-GitHub Actions) só começa se o Leonardo pedir.
+do Leonardo em 2026-10-28. CI implementado em 2026-11-10. Não há próxima fase pendente —
+qualquer trabalho novo só começa se o Leonardo pedir.
+
+**Commits sempre em inglês** (conventional commits: `feat:`, `fix:`, `test:`, `ci:`, `docs:`),
+a pedido do Leonardo em 2026-11-10. Explicações no chat continuam em português.
 
 Atenção: o Leonardo tem outro projeto (`ecommerce-api`) que também usa a porta 8080. Se o
 Payment API não responder, conferir `docker ps` antes de supor bug — e não derrubar o outro
@@ -120,6 +127,13 @@ Webhook só pode levar PROCESSING → APPROVED/DECLINED.
   compartilhados quando nem todo teste que usa o helper realmente invoca o método stubado.
 - **Mock de método `void`**: `when(x.metodoVoid()).thenThrow(...)` não compila. Sintaxe certa:
   `doThrow(...).when(x).metodoVoid(...)`.
+- **Container Testcontainers é compartilhado entre TODAS as classes `*IT`**, e a ordem das
+  classes muda por SO (Windows ≠ Linux do CI). Todo `cleanDatabase()` precisa apagar respeitando
+  as FKs: `webhook_events` → `payments` → `users`. O primeiro run do CI quebrou 17 testes do
+  `PaymentControllerIT` por isso. Pra reproduzir a ordem do CI localmente:
+  `./mvnw verify -Dfailsafe.runOrder=reversealphabetical`.
+- **`mvnw` precisa do bit executável no git** (`git update-index --chmod=+x mvnw`) — no Windows
+  não faz diferença, mas no Linux do CI daria "Permission denied".
 
 ## Padrão recorrente de bugs até agora
 
