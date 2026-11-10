@@ -16,12 +16,12 @@ jobs:
 
     steps:
       - name: Checkout do código
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
 
       # Mesma versão do projeto (Java 21). O "cache: maven" guarda o ~/.m2
       # entre execuções, então as dependências não são baixadas toda vez.
       - name: Configura Java 21
-        uses: actions/setup-java@v4
+        uses: actions/setup-java@v6
         with:
           distribution: temurin
           java-version: '21'
@@ -36,7 +36,7 @@ jobs:
       # na página da execução, em vez de só o log resumido.
       - name: Publica relatórios de teste
         if: failure()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: test-reports
           path: |
