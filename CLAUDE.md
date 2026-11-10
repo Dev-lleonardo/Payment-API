@@ -65,10 +65,21 @@ FASES 1–13 concluídas e publicadas no GitHub:
   (os 94 testes, Testcontainers usa o Docker do runner `ubuntu-latest`) a cada push/PR na `main`.
   Actions nas últimas majors (checkout v7, setup-java v6, upload-artifact v7); relatórios de
   teste sobem como artifact só se falhar. Badge de status no topo do README.
+- **Deploy (2026-11-10)** — API no **Render** (Free Web Service, Docker, região Virginia, auto-deploy
+  a cada push na `main`): https://payment-api-3u2h.onrender.com/swagger-ui.html. Banco no **Neon**
+  (Postgres Free, AWS us-east-1, banco `paybd`, conexão direta sem pooler por causa do Flyway).
+  Variáveis no painel do Render: `DB_URL` (JDBC com `?sslmode=require`), `DB_USERNAME`,
+  `DB_PASSWORD`, `JWT_SECRET`, `WEBHOOK_SECRET` — segredos novos, diferentes dos do
+  `application-dev.yml`; **sem** `SPRING_PROFILES_ACTIVE`. Ajustes de código pro deploy: `server.port: ${PORT:8080}`,
+  `DB_URL` opcional sobrescrevendo a URL montada por partes, `show-sql` só no perfil dev,
+  `-XX:MaxRAMPercentage=75.0` no Dockerfile (container de 512 MB). Free tier dorme após 15 min
+  sem tráfego (~1 min pra acordar).
 
 **Roadmap concluído.** A FASE 14 (revisão final estilo entrevista técnica) foi pulada a pedido
 do Leonardo em 2026-10-28. CI implementado em 2026-11-10. Não há próxima fase pendente —
-qualquer trabalho novo só começa se o Leonardo pedir.
+Deploy público feito em 2026-11-10.
+FASE 14 (simulado de entrevista) foi iniciada e pausada na pergunta 2 de 8 (máquina de estados) —
+retomar dali se o Leonardo pedir.
 
 **Commits sempre em inglês** (conventional commits: `feat:`, `fix:`, `test:`, `ci:`, `docs:`),
 a pedido do Leonardo em 2026-11-10. Explicações no chat continuam em português.

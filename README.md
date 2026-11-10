@@ -2,6 +2,9 @@
 
 [![CI](https://github.com/Dev-lleonardo/Payment-API/actions/workflows/ci.yml/badge.svg)](https://github.com/Dev-lleonardo/Payment-API/actions/workflows/ci.yml)
 
+**🚀 Demo ao vivo:** [Swagger UI](https://payment-api-3u2h.onrender.com/swagger-ui.html)
+*(hospedagem gratuita — a primeira requisição pode levar ~1 min para "acordar" a API)*
+
 API REST em Java 21 + Spring Boot 4 que simula o processamento de pagamentos de pedidos. O foco não é o CRUD em si, e sim os problemas que todo sistema de pagamento real precisa resolver: **requisições duplicadas, transições de estado inválidas, eventos externos não confiáveis e acesso a dados de outros usuários.**
 
 **Stack:** Java 21 · Spring Boot 4.1 · Spring Security + JWT · Spring Data JPA · PostgreSQL 16 · Flyway · Bean Validation · springdoc-openapi (Swagger) · JUnit 5 · Mockito · Testcontainers · Docker Compose
