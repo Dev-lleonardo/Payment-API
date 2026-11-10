@@ -1,0 +1,44 @@
+# CI: roda a suíte completa (unitários + integração) a cada push e pull request.
+# Os testes de integração usam Testcontainers, que precisa de Docker — o runner
+# ubuntu-latest do GitHub já vem com Docker instalado, então não precisa de
+# nenhum serviço extra aqui (diferente de declarar um "services: postgres").
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout do código
+        uses: actions/checkout@v4
+
+      # Mesma versão do projeto (Java 21). O "cache: maven" guarda o ~/.m2
+      # entre execuções, então as dependências não são baixadas toda vez.
+      - name: Configura Java 21
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+          cache: maven
+
+      # verify = compila + Surefire (unitários) + Failsafe (*IT, integração).
+      # -B (batch mode) deixa o log limpo, sem barra de progresso de download.
+      - name: Roda os testes (./mvnw verify)
+        run: ./mvnw -B verify
+
+      # Se algum teste falhar, os relatórios ficam disponíveis pra download
+      # na página da execução, em vez de só o log resumido.
+      - name: Publica relatórios de teste
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-reports
+          path: |
+            target/surefire-reports/
+            target/failsafe-reports/
