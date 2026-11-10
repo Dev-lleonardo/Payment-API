@@ -9,6 +9,7 @@ import com.example.payment_api.entity.Role;
 import com.example.payment_api.entity.User;
 import com.example.payment_api.repository.PaymentRepository;
 import com.example.payment_api.repository.UserRepository;
+import com.example.payment_api.repository.WebhookEventRepository;
 import com.example.payment_api.security.JwtService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -54,14 +55,21 @@ class PaymentControllerIT extends AbstractIntegrationTest {
     private PaymentRepository paymentRepository;
 
     @Autowired
+    private WebhookEventRepository webhookEventRepository;
+
+    @Autowired
     private JwtService jwtService;
 
     // O container Postgres é compartilhado (static) por TODA a classe de
     // teste — sem isso, um teste de listagem (que traz "tudo" pro ADMIN)
     // enxergaria também os pagamentos deixados por testes anteriores.
-    // Ordem importa: payments tem FK pra users.
+    // Ordem importa: webhook_events tem FK pra payments, e payments tem FK
+    // pra users. O container é compartilhado entre as classes *IT também, então
+    // se o WebhookControllerIT rodar antes (ordem varia por SO — no Linux do CI
+    // rodou), sobram webhook_events que travariam o delete de payments.
     @BeforeEach
     void cleanDatabase() {
+        webhookEventRepository.deleteAll();
         paymentRepository.deleteAll();
         userRepository.deleteAll();
     }
